@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import connectionHandler from './connections/connectionHandler'
-import axios from 'axios'
-
+import './app.css'
 const Filterer = ({nameFiltered,nameFilterHandler}) => {
 
 
@@ -13,10 +12,10 @@ const Filterer = ({nameFiltered,nameFilterHandler}) => {
 }
 
 
-const Persons = ({persons,filter, setPersons}) => {  
+const Persons = ({persons,filter, setPersons, deletePerson}) => {  
   return  persons.filter(person =>  person.name.toLocaleLowerCase().match(filter.toLocaleLowerCase()))
     .map(person => 
-    <p key={person.name}>{`${person.name} ${person.number} `} <button key={person.id} onClick={() => deletePerson(person,persons,setPersons)}>Delete</button></p>)
+    <p key={person.name}>{`${person.name} ${person.number} `} <button key={person.id} onClick={() => deletePerson(person)}>Delete</button></p>)
     
 }
 
@@ -42,17 +41,27 @@ const AddPerson = ({addPerson, name, number, handleName, handleNumber}) => {
   
 }
 
-const deletePerson = (person,persons,setPersons) => {
-  if(window.confirm(`Would you like to delete ${person.name}?`)){
-    connectionHandler.deletePerson(person.id)
-    setPersons(persons.filter(p => p.name !== person.name))
-    
-  } 
+
+
+const DeleteMessage = ({message}) => {
+  if(message=== null){
+    return null
+  }
   
+  return <div className='delete'>
+          {message}
+  </div>
 }
 
-
-
+const SuccessMessage = ({message}) => {
+  if(message=== null){
+    return null
+  }
+  
+  return <div className='success'>
+          {message}
+  </div>
+}
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -66,6 +75,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filterValue, setFilter] = useState('')
+  const [deleteMessage, setDeleteMsg] = useState('')
+  const [successMessage, setSuccessMsg] = useState('')
 
   const handleNewNameChange = (event) =>{
     setNewName(event.target.value)
@@ -79,6 +90,32 @@ const App = () => {
     setFilter(event.target.value)
   }
 
+
+  const deletePerson = (person) => {
+
+  if(window.confirm(`Would you like to delete ${person.name}?`)){
+    connectionHandler.deletePerson(person.id).then( response => {
+      setPersons(persons.filter(p => p.name !== person.name))
+      setDeleteMsg(`Deleted ${person.name}`)
+      setTimeout(()=> {
+  
+        setDeleteMsg(null)
+      },5000)
+        
+
+
+    }).catch((error) => {
+
+            setDeleteMsg(`${person.name} was already deleted`)
+            setTimeout(()=> {
+        
+              setDeleteMsg(null)
+            },5000)
+              
+          })
+  } 
+  
+}
 
   const addNewName =(event) => {
     const person = {
@@ -94,7 +131,13 @@ const App = () => {
       setPersons(persons.concat(response))
       setNewName('')
       setNewNumber('')
+      setSuccessMsg(`Added ${response.name}`)
+      setTimeout(()=> {
+
+        setSuccessMsg(null)
+      },5000)
     })
+
    
     } else {
       
@@ -103,6 +146,20 @@ const App = () => {
           connectionHandler.editPerson(wasFound.id, person)
           .then(response => {
             setPersons(persons.filter(p => p.name !== wasFound.name).concat(response))
+            
+            setSuccessMsg(`Edited ${response.name}´s phonenumber to ${response.number}`)
+          setTimeout(()=> {
+    
+            setSuccessMsg(null)
+          },5000)
+          }).catch((error) => {
+
+            setDeleteMsg(`${person.name} was not found`)
+            setTimeout(()=> {
+        
+              setDeleteMsg(null)
+            },5000)
+              
           })
           
 
@@ -113,7 +170,9 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
-       <Filterer filter={filterValue} nameFilterHandler={handleFilterChange}/>
+      <DeleteMessage message={deleteMessage}></DeleteMessage>
+      <SuccessMessage message={successMessage}></SuccessMessage>
+      <Filterer filter={filterValue} nameFilterHandler={handleFilterChange}/>
       <h2>Add a new person</h2>
       <AddPerson
        addPerson={addNewName}
@@ -125,7 +184,7 @@ const App = () => {
        
       
       <h2>Numbers</h2>
-      <Persons persons={persons} filter={filterValue} setPersons={setPersons}/>
+      <Persons persons={persons} filter={filterValue} setPersons={setPersons} deletePerson={deletePerson}/>
     </div>
   )
 
