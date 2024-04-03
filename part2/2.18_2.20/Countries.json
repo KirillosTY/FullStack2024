@@ -1,0 +1,14 @@
+{
+    "countries": [
+      {
+        "id": 1,
+        "name": "finland",
+        "important": true
+      },
+      {
+        "id": 2,
+        "name": "sweden",
+        "important": false
+      }
+    ]
+  }
