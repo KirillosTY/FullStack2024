@@ -1,23 +1,33 @@
 const mailRouter = require('express').Router()
 const Blog = require('.././models/blogSchema')
+const { response } = require('../app')
 
-mailRouter.get('', (request, response) => {
-  Blog
-    .find({})
-    .then(blogs => {
-      response.json(blogs)
-    })
+mailRouter.get('',async (request, response) => {
+  response.json(await Blog.find({}))
 })
 
 mailRouter.post('', (request, response) => {
-  const blog = new Blog(request.body)
+  const blog= request.body 
+  if(blog.title === undefined || blog.url === undefined){
+    response.status(400).end()
+  } else {
 
-  blog
-    .save()
-    .then(result => {
-      response.status(201).json(result)
-    })
+    if(blog.likes === undefined){
+   
+      blog.likes = 0
+    }
+    const newBlog = new Blog(blog)
+    newBlog
+      .save()
+      .then(result => {
+        response.status(201).json(result)
+      })
+  }
 })
+
+
+
+
 
 
 module.exports = mailRouter
