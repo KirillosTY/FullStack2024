@@ -117,6 +117,44 @@ test('If no title field is given bad request should be returned', async () => {
 })
 
 
+test('deleted by id should return 204 status', async () => {
+
+
+    let newBlogList = (await api.get('/api/blogs')).body
+    const idToDelete = newBlogList[0].id
+
+    await api.delete(`/api/blogs/${idToDelete}`)
+            .expect(204)
+
+
+    newBlogList = (await api.get('/api/blogs')).body
+    const blog = newBlogList.find((blog) => blog.title === 'FirstBlog')
+    assert.strictEqual(blog, undefined)
+    assert.strictEqual(newBlogList.length,startBlogList.length-1)
+
+})
+
+
+test('update by id should return 204 status', async () => {
+
+
+    let newBlogList = (await api.get('/api/blogs')).body
+    const idToUpdate = newBlogList[0].id
+    const blogToUpdate = newBlogList[0]
+    blogToUpdate.likes=100000000
+
+    const blog = await api.put(`/api/blogs/${idToUpdate}`).send(blogToUpdate)
+            .expect(200)
+
+    assert.strictEqual(blog.body.id, blogToUpdate.id)
+    assert.strictEqual(blog.body.likes, 100000000)
+    assert.strictEqual(blog.body.title, blogToUpdate.title)
+
+
+})
+
+
+
 after(async () => {
     await mongoose.connection.close()
 })
