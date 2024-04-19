@@ -6,6 +6,7 @@ const middleware = require('./utils/middleware.js')
 const logger = require('./utils/logger')
 const mongoose = require('mongoose')
 const router = require('./controller/router')
+const routeUser = require('./controller/routeUsers') 
 
 
 mongoose.set('strictQuery',false)
@@ -20,6 +21,8 @@ app.use(express.json())
 app.use(middleware.morganFormat)
 
 app.use('/api/blogs',router)
+
+app.use('/api/users',routeUser)
 
 
 const PORT = config.PORT

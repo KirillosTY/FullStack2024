@@ -35,7 +35,6 @@ mailRouter.delete('/:id', async (request, response)=> {
 mailRouter.put('/:id', async (request, response) => {
   const updatedBlog = request.body;
 
-  console.log(updatedBlog,'it´s this alright')
   const updatedDBBlog = await Blog.findByIdAndUpdate(request.params.id, updatedBlog, {new:true})
   
   response.json(updatedDBBlog)
