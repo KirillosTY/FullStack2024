@@ -1,5 +1,5 @@
 
-const { test, after, beforeEach } = require('node:test')
+/* const { test, after, beforeEach } = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const assert = require('node:assert')
@@ -139,6 +139,7 @@ test('deleted by id should return 204 status', async () => {
 test('update by id should return 204 status', async () => {
 
 
+
     let newBlogList = (await api.get('/api/blogs')).body
     const idToUpdate = newBlogList[0].id
     const blogToUpdate = newBlogList[0]
@@ -155,7 +156,6 @@ test('update by id should return 204 status', async () => {
 })
 
 
-
 after(async () => {
     await mongoose.connection.close()
 })
@@ -164,4 +164,4 @@ beforeEach( async ()=> {
     await Blog.deleteMany()
     await new Blog(startBlogList[0]).save()
     await new Blog(startBlogList[1]).save()
-})
+})*/

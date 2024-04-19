@@ -2,8 +2,10 @@ const mailRouter = require('express').Router()
 const Blog = require('.././models/blogSchema')
 const { response } = require('../app')
 
+
 mailRouter.get('',async (request, response) => {
-  response.json(await Blog.find({}))
+
+  response.json(await Blog.find({})).populate('users')
 })
 
 mailRouter.post('', (request, response) => {

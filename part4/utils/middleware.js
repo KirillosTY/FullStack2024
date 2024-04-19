@@ -1,5 +1,8 @@
+const { MongooseError } = require('mongoose');
 const logger = require('./logger')
 const morgan = require('morgan')
+require('express-async-errors')
+
 
 
 morgan.token('json', (req) => JSON.stringify(req.body));
@@ -21,9 +24,11 @@ const errorHandler= (error, request, resposnse,next) => {
     } else if(error.name === 'ValidationError'){
         return response.status(400).json({ error: error.message });
 
+    } else if(error.name === "MongoServerError  "){
+        console.log('its a mongoooose')
     }
-
-    next(error)
+    console.log("we are here")
+    next(error) 
 
 
 }

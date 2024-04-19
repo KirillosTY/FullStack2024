@@ -8,6 +8,11 @@ routeUser.post('', async (request, response )=> {
 
     const {username, name, password} = request.body
 
+    if(password === undefined){
+        return response.status(500).json({error:'Password is too short'})
+    } else if(password.length < 3){
+        return response.status(500).json({error:'Password is too short'})
+    }
     const saltrounds = 12;
 
     const passwordHash = await bcrypt.hash(password, saltrounds)
