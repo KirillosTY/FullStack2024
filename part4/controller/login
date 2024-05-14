@@ -6,23 +6,17 @@ const User = require('../models/userSchema')
 
 loginRouter.post('', async (request, response)=> {
     const {username, password} = request.body
-    try {
-        const foundUser = await User.findOne({ username });
-    } catch (error) {
-        console.error('Error finding user:', error);
-        response.status(500).json({ error: 'Internal Server Error' });
-        return ;
-    }
-
-    console.log(foundUser, 'this here was not the prolbem?')   
+    
+    
+    const foundUser = await User.findOne({username})
     const correctPassword = foundUser === null? false : await bcrypt.compare(password, foundUser.passwordHash)
-    console.log("käydääääääääääääääääääääääääääääääääääääääään")
+
     if(foundUser === null || !correctPassword ){
         return response.status(401).json({
             error: 'invalid username or password'
           })
     }
-    console.log("käydäääänkö?!")
+
     const tokenUser = {
         username: foundUser.username,
         id: foundUser._id
