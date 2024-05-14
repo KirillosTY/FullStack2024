@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken')
 
 
 
-mailRouter.get('',async (request, response) => {
+mailRouter.get('', async (request, response) => {
   
   response.json(await Blog.find({}).populate('user',{username:1, name:1}))
 })

@@ -27,7 +27,8 @@ loginRouter.post('', async (request, response)=> {
         process.env.SECRET,
         {expiresIn: 60*5})
 
-    response.status(201).send(token, foundUser.username,foundUser.name)
+    
+    response.status(201).send({token,username: foundUser.username, name:foundUser.name})
 
 })
 

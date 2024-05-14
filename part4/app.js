@@ -20,14 +20,16 @@ mongoose.connect(mongoUrl)
 app.use(cors())
 app.use(express.json())
 app.use(middleware.tokenGetter)
+app.use(middleware.morganFormat)
+app.use(middleware.errorHandler)
+
 
 app.use('/api/blogs',middleware.tokenUser, router)
 app.use('/api/users',routeUser)
 app.use('/api/login', routeLogin)
 
-app.use(middleware.morganFormat)
 
-app.use(middleware.errorHandler)
+
 
 app.use(logger.info)
 app.use(logger.error)
