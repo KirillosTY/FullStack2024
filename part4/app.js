@@ -6,7 +6,9 @@ const middleware = require('./utils/middleware.js')
 const logger = require('./utils/logger')
 const mongoose = require('mongoose')
 const router = require('./controller/router')
-const routeUser = require('./controller/routeUsers') 
+const routeUser = require('./controller/routeUsers')    
+const routeLogin = require('./controller/login')
+
 
 
 mongoose.set('strictQuery',false)
@@ -17,13 +19,18 @@ mongoose.connect(mongoUrl)
 
 app.use(cors())
 app.use(express.json())
+app.use(middleware.tokenGetter)
+
+app.use('/api/blogs',middleware.tokenUser, router)
+app.use('/api/users',routeUser)
+app.use('/api/login', routeLogin)
 
 app.use(middleware.morganFormat)
 
-app.use('/api/blogs',router)
+app.use(middleware.errorHandler)
 
-app.use('/api/users',routeUser)
-
+app.use(logger.info)
+app.use(logger.error)
 
 const PORT = config.PORT
 
