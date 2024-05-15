@@ -1,7 +1,6 @@
 import axios from 'axios'
 const baseUrl = '/api/login'
 
-let token = null
 
 const login = ({username,password}) => {
 

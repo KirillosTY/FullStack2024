@@ -38,11 +38,11 @@ const errorHandler= (error, request, response,next) => {
 
 }
 
-const tokenGetter =  async (request, response, next) => {
+const tokenGetter = async (request, response, next) => {
     const auth = await request.get('authorization')
-
     if(auth && auth.startsWith('Bearer ')){
         request.token =  auth.replace('Bearer ','')
+
     }
     next()
     
@@ -50,7 +50,7 @@ const tokenGetter =  async (request, response, next) => {
 }
 
 const tokenUser = async(request, response, next) => {
-    
+   
     const userToken = jwt.verify(request.token, process.env.SECRET)
     const user = await users.findById(userToken.id)
     if(user){
