@@ -5,24 +5,24 @@ const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
 
   const [show,setShow] = useState(false)
 
-  const displayAll = {display: show? '':'none'}
-  const displayTitle = {display: show? 'none':''}
+  const displayAll = { display: show? '':'none' }
+  const displayTitle = { display: show? 'none':'' }
 
   const toggleShow = () => {
 
     setShow(!show)
-  } 
+  }
 
   const upvoted = (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
     const blogCreated = {
-      "title":blog.title,
-      "author":blog.author,
-      "likes": blog.likes+1,
-      "url": blog.url,
-      "id":blog.id,
-      "user":blog.user.id
+      'title':blog.title,
+      'author':blog.author,
+      'likes': blog.likes+1,
+      'url': blog.url,
+      'id':blog.id,
+      'user':blog.user.id
     }
     updateUpvote(blogCreated)
 
@@ -33,22 +33,22 @@ const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
 
     removeBlog(blog)
   }
-  const showButtonToOwner = {display: blog.user.username === user.username? '': 'none'}
+  const showButtonToOwner = { display: blog.user.username === user.username? '': 'none' }
 
 
-  
+
   if(show){
     return <div style={displayAll}>
-    <p>Title:{blog.title} <button onClick={()=> toggleShow()}>hide</button></p>
-    <p>likes: {blog.likes} <button onClick={upvoted}>vote</button></p>
-    <p>Author: {blog.author}</p>
-    <p>Url: {blog.url}</p>
-    <p><button  onClick={blogToRemove} style={showButtonToOwner}>remove</button></p>
-  </div>
+      <p>Title:{blog.title} <button onClick={() => toggleShow()}>hide</button></p>
+      <p>likes: {blog.likes} <button onClick={upvoted}>vote</button></p>
+      <p>Author: {blog.author}</p>
+      <p>Url: {blog.url}</p>
+      <p><button  onClick={blogToRemove} style={showButtonToOwner}>remove</button></p>
+    </div>
   }
 
   return (<div className='blogStyle' style={displayTitle} >
-    {blog.title} <button onClick={()=> toggleShow()}>view</button>
+    {blog.title} <button onClick={() => toggleShow()}>view</button>
   </div>)
 }
 

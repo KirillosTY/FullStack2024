@@ -35,7 +35,7 @@ const updateBlog = (blog) => {
 
   const request = axios.put(baseUrl+`/${blog.id}`,blog,config)
   return request.then((response) => response.data)
-  
+
 }
 
 
@@ -45,7 +45,7 @@ const removeBlog = (blog) => {
   }
 
   const request = axios.delete(baseUrl+`/${blog.id}`,config)
-  return request.then((response)=> response.data)
+  return request.then((response) => response.data)
 }
 
 export default { getAll, create: createBlog, setToken,put: updateBlog, removeBlog }
