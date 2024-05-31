@@ -20,7 +20,7 @@ const getAll = () => {
 }
 
 
-const create = (blog) => {
+const createBlog = (blog) => {
   const config = {
     headers: { authorization: token }
   }
@@ -28,5 +28,24 @@ const create = (blog) => {
   return request.then((response) => response.data)
 }
 
+const updateBlog = (blog) => {
+  const config = {
+    headers: { authorization: token }
+  }
 
-export default { getAll, create, setToken }
+  const request = axios.put(baseUrl+`/${blog.id}`,blog,config)
+  return request.then((response) => response.data)
+  
+}
+
+
+const removeBlog = (blog) => {
+  const config = {
+    headers: { authorization: token }
+  }
+
+  const request = axios.delete(baseUrl+`/${blog.id}`,config)
+  return request.then((response)=> response.data)
+}
+
+export default { getAll, create: createBlog, setToken,put: updateBlog, removeBlog }

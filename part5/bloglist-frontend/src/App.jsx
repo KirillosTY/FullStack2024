@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
-import failureStyles from './styles/failurePopup.css'
-import SuccessStyles from './styles/successPopup.css'
-
+import SuccessMessage from './components/SuccessMessage'
+import FailureMessage from './components/FailureMessage'
+import Togglable from './components/Togglable'
+import CreateBlog from './components/CreateBlog'
 
 
 const App = () => {
@@ -13,21 +14,11 @@ const App = () => {
   const [password, setPassword] = useState('') 
   const [user, setUser] = useState('') 
 
-  const [title, setTitle] = useState('') 
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
-
 
   const [successMessage, setSuccessMessage]= useState('')
   const [failureMessage, setfailureMessage]= useState('')
 
-  useEffect(() => {
-    blogService.getAll(user).then(blogs =>{
-      setBlogs( blogs )
-    }
-    )  
-  }, [user])
-
+ 
 
   useEffect(()=> {
 
@@ -41,6 +32,14 @@ const App = () => {
       console.log('nullia')
     }
   },[]) 
+
+  useEffect(() => {
+    blogService.getAll(user).then(blogs =>{
+      setBlogs( blogs )
+    }
+    )  
+  }, [user])
+
   const handleLogin = (event) =>  {
     event.preventDefault()
     console.log('Logging in, please be patient!')
@@ -57,9 +56,9 @@ const App = () => {
         setUser(userLogged)
 
       
-      }).catch((error)=>{
+      }).catch(()=>{
         setfailureMessage('Wrong username or password, probably')
-  
+        
         setTimeout(()=>{
           setfailureMessage('')
         }, 5000)
@@ -83,15 +82,8 @@ const App = () => {
     setUser('')
   }
 
-  const handleCreation = (event) =>{
-    event.preventDefault()
-    const blog ={
-      title,
-      author,
-      url
-    }
+  const handleCreation = ({blog}) =>{
 
-    console.log(user)
     blogService.create(blog).then((response) => {
       console.log(response)
       setBlogs(blogs.concat(response))
@@ -99,29 +91,50 @@ const App = () => {
       setTimeout(()=> {
         setSuccessMessage('')
       },5000)
+     
     })
 
   }
 
-  const SuccessMessage = () => {
+  const handleUpvote = (blog)  => {
+    blogService.put(blog).then((response) => {
+     
+      blogService.getAll(user).then(blogs =>{
+        setBlogs( blogs )
+      }
+      )  
+      setSuccessMessage(`${blog.title} by ${blog.author} successfully upvoted`)
+      setTimeout(()=> {
+        setSuccessMessage('')
+      },5000)
+    })
+
     
-    if(successMessage){
-      return (<div className='success'>{successMessage}</div>)
-    }
+
   }
 
-  const FailureMessage = () => {
+  const removeBlog = (blog) => {
+      blogService.removeBlog(blog).then((response) => {
+
+        blogService.getAll(user).then(blogs =>{
+        setBlogs( blogs )
+        })
+
+        setSuccessMessage(`${blog.title} by ${blog.author} successfully deleted`)
+        setTimeout(()=> {
+          setSuccessMessage('')
+        },5000)
+      })
     
-    if(failureMessage){
-      return <div className='failure'>{failureMessage}</div>
-    }
   }
+
+ 
 
   if (user === '') {
     return (
       <div>
         <h2>Log in to application</h2>
-        <FailureMessage>{failureMessage}</FailureMessage>
+        <FailureMessage failureMessage = {failureMessage}></FailureMessage>
         <form onSubmit={handleLogin}>
           <div>
             Username: <input
@@ -148,36 +161,18 @@ const App = () => {
 
   return (
     <div>
+    
       <h1>Blogs</h1>
-      <SuccessMessage>{successMessage}</SuccessMessage>
+      <SuccessMessage successMessage = {successMessage}></SuccessMessage>
 
       <p>{user.name} logged in <button onClick={handleLogout}>logout</button> </p>
       <h2></h2>
-      <form onSubmit={handleCreation}>
-        Title: <input 
-        type='text'
-        value={title}
-        name = 'Title'
-        onChange={({target})=> setTitle(target.value)}
-        /> <br/>
-        Author: <input 
-        type='text'
-        value={author}
-        name = 'Author'
-        onChange={({target})=> setAuthor(target.value)}
-        /><br/>
-        Url: <input 
-        type='text'
-        value={url}
-        name = 'Url'
-        onChange={({target})=> setUrl(target.value)}
-        /><br/>
-        <button type='submit'>Create</button>
+      <Togglable  buttonLabel="new Blog">
+        <CreateBlog handleCreation= {handleCreation}></CreateBlog>
+      </Togglable>  
 
-      </form>
-
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
+      {blogs.sort((first,second) => first.likes - second.likes).map(blog =>
+        <Blog key={blog.id} blog={blog} updateUpvote={handleUpvote} removeBlog={removeBlog}  user={user}/>
       )}
     </div>
   )

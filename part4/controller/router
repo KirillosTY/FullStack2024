@@ -10,7 +10,8 @@ const jwt = require('jsonwebtoken')
 mailRouter.get('', async (request, response) => {
 
   const user = request.user  
-  response.json(await Blog.find({user}).populate('user',{username:1, name:1}))
+
+  response.json(await Blog.find({}).populate('user',{username:1, name:1}))
 })
 
 mailRouter.post('', async(request, response) => {
@@ -21,7 +22,7 @@ mailRouter.post('', async(request, response) => {
   const usersFoundFirst = await users.findById(user.id)
   const blog= request.body 
   blog.user = usersFoundFirst.id
-  
+  ''
  if(blog.title === undefined || blog.url === undefined){
     response.status(400).end()
   } else {
@@ -62,7 +63,9 @@ mailRouter.delete('/:id', async (request, response)=> {
 mailRouter.put('/:id', async (request, response) => {
   const updatedBlog = request.body;
 
-  const updatedDBBlog = await Blog.findByIdAndUpdate(request.params.id, updatedBlog, {new:true})
+  const user = request.user  
+
+  const updatedDBBlog = await Blog.findByIdAndUpdate(request.params.id, updatedBlog, {new:true}).populate('user',{username:1,name:1 })
   
   response.json(updatedDBBlog)
 })
