@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import styles from '.././styles/blogs.css'
 
 const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
 
@@ -27,7 +26,7 @@ const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
     updateUpvote(blogCreated)
 
   }
-
+  
   const blogToRemove = (event) => {
     event.preventDefault()
 
@@ -47,7 +46,7 @@ const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
     </div>
   }
 
-  return (<div className='blogStyle' style={displayTitle} >
+  return (<div  style={displayTitle} >
     {blog.title} <button onClick={() => toggleShow()}>view</button>
   </div>)
 }

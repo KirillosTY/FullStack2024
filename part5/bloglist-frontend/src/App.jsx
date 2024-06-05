@@ -134,7 +134,6 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
-        <FailureMessage failureMessage = {failureMessage}></FailureMessage>
         <form onSubmit={handleLogin}>
           <div>
             Username: <input
@@ -163,7 +162,6 @@ const App = () => {
     <div>
 
       <h1>Blogs</h1>
-      <SuccessMessage successMessage = {successMessage}></SuccessMessage>
 
       <p>{user.name} logged in <button onClick={handleLogout}>logout</button> </p>
       <h2></h2>
