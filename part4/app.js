@@ -27,12 +27,11 @@ app.use(middleware.errorHandler)
 app.use('/api/blogs',middleware.tokenUser, router)
 app.use('/api/users',routeUser)
 app.use('/api/login', routeLogin)
-
-
-
-
-app.use(logger.info)
-app.use(logger.error)
+console.log(process.env.NODE_ENV)
+if (process.env.NODE_ENV === 'test ') {
+  const testingRouter = require('./controller/testing')
+  app.use('/api/testing', testingRouter)
+}
 
 const PORT = config.PORT
 

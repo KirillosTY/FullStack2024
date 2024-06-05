@@ -1,4 +1,4 @@
-/*
+
 const bcrypt = require('bcrypt')
 const User = require('../models/userSchema')
 const { test, after, beforeEach,describe } = require('node:test')
@@ -96,4 +96,4 @@ describe('Starting with no users in database', () => {
         await mongoose.connection.close()
     })
     
-})*/
+})
