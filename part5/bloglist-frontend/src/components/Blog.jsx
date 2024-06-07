@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import styles from '.././styles/blogs.css'
 
 const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
 
@@ -26,7 +27,7 @@ const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
     updateUpvote(blogCreated)
 
   }
-  
+
   const blogToRemove = (event) => {
     event.preventDefault()
 
@@ -37,7 +38,7 @@ const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
 
 
   if(show){
-    return <div style={displayAll}>
+    return <div style={displayAll} data-testid="blog">
       <p>Title:{blog.title} <button onClick={() => toggleShow()}>hide</button></p>
       <p>likes: {blog.likes} <button onClick={upvoted}>vote</button></p>
       <p>Author: {blog.author}</p>
@@ -46,7 +47,7 @@ const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
     </div>
   }
 
-  return (<div  style={displayTitle} >
+  return (<div className='blogStyle' style={displayTitle} data-testid="blog" >
     {blog.title} <button onClick={() => toggleShow()}>view</button>
   </div>)
 }
