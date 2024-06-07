@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import styles from '.././styles/blogs.css'
+import blogStyles from '.././styles/blogs.css?inline'
 
 const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
 
@@ -38,18 +38,18 @@ const Blog = ({ blog, updateUpvote, removeBlog, user }) => {
 
 
   if(show){
-    return <div style={displayAll} data-testid="blog">
+    return <li className='blogs' style={displayAll} data-testid={'blog'+blog.title+blog.author}>
       <p>Title:{blog.title} <button onClick={() => toggleShow()}>hide</button></p>
       <p>likes: {blog.likes} <button onClick={upvoted}>vote</button></p>
       <p>Author: {blog.author}</p>
       <p>Url: {blog.url}</p>
       <p><button  onClick={blogToRemove} style={showButtonToOwner}>remove</button></p>
-    </div>
+    </li>
   }
 
-  return (<div className='blogStyle' style={displayTitle} data-testid="blog" >
+  return (<li className='blogs' style={displayTitle} data-testid="blog" >
     {blog.title} <button onClick={() => toggleShow()}>view</button>
-  </div>)
+  </li>)
 }
 
 export default Blog

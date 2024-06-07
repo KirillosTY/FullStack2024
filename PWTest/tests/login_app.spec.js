@@ -1,5 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-import testHelper, { loginWith } from './helper'
+import testHelper, { loginWith, createBlog, voteFor } from './helper'
 
 describe('Blog page', () => {
   beforeEach(async ({ page, request }) => {
@@ -43,7 +43,7 @@ describe('Blog page', () => {
   test('Login is successful with right credentials', async ({ page }) => {
     await page.getByText('Username:',{exact:false}).waitFor()
 
-    loginWith(page,'Steinway','secretu')
+    await loginWith(page,'Steinway','secretu')
 
     await expect(page.getByText('Albert Einstein logged in')).toBeVisible()
 
@@ -52,11 +52,11 @@ describe('Blog page', () => {
 
   test('Login is unsuccessful with wrong credentials', async ({ page }) => {
 
-   
-    const  textInputs = await page.getByRole('textbox').all()
+    await page.getByText('Username:',{exact:false}).waitFor()
 
-    loginWith(page,'Steinway','falsePass')
-    
+    await loginWith(page,'Steinway','falsePass')
+    await page.getByText('Username:',{exact:false}).waitFor()
+
     await expect(page.getByText('Albert Einstein logged in')).not.toBeVisible()
     await expect(page.getByText('Log in to application', {exact:false})).toBeVisible()
 
@@ -65,7 +65,7 @@ describe('Blog page', () => {
 
   test('a new blog can be created', async ({ page }) => {
 
-    loginWith(page,'Steinway','secretu')
+    await loginWith(page,'Steinway','secretu')
 
 
     await expect(page.getByText('Albert Einstein logged in')).toBeVisible()
@@ -74,54 +74,42 @@ describe('Blog page', () => {
 
     const  blogCreationInputs = await page.getByRole('textbox').all()
 
-    await page.getByTestId('title').fill('titletuu')
-    await page.getByTestId('author').fill('authorituu')
-    await page.getByTestId('url').fill('secretu.urluu')
-
-    await page.getByRole('button', { name: 'Create' }).click()
-    
+    createBlog(page, 'titletuu','authorituu', 'secretu.urluu')
     await expect(page.getByText('titletuu view')).toBeVisible({ timeout: 6100 })
     await expect(page.getByRole('button', { name: 'view' })).toBeVisible()
 
   })
 
   test('a blog can be liked', async ({ page }) => {
-    loginWith(page,'Steinway','secretu')
+    await loginWith(page,'Steinway','secretu')
 
 
     await expect(page.getByText('Albert Einstein logged in')).toBeVisible()
 
     await page.getByRole('button', { name: 'New blog' }).click()
 
-    await page.getByTestId('title').fill('titletuu')
-    await page.getByTestId('author').fill('authorituu')
-    await page.getByTestId('url').fill('secretu.urluu')
+    await createBlog(page, 'titletuu','authorituu', 'secretu.urluu')
 
-    await page.getByRole('button', { name: 'Create' }).click()
     await page.getByRole('button', { name: 'view' }).click()
     await expect(page.getByText('Likes: 0 vote')).toBeVisible()
 
-    await page.getByRole('button', { name: 'vote' }).click()
+    await voteFor(page, 'blogtitletuuauthorituu',1)
     await expect(page.getByText('Likes: 1 vote')).toBeVisible()
 
   })
 
   test('a blog can be removed', async ({ page }) => {
 
-    loginWith(page,'Steinway','secretu')
+    await loginWith(page,'Steinway','secretu')
 
 
     await expect(page.getByText('Albert Einstein logged in')).toBeVisible()
 
     await page.getByRole('button', { name: 'New blog' }).click()
 
-    const  blogCreationInputs = await page.getByRole('textbox').all()
 
-    await page.getByTestId('title').fill('titletuu')
-    await page.getByTestId('author').fill('authorituu')
-    await page.getByTestId('url').fill('secretu.urluu')
+    await createBlog(page, 'titletuu','authorituu', 'secretu.urluu')
 
-    await page.getByRole('button', { name: 'Create' }).click()
     await page.getByRole('button', { name: 'view' }).click()
     await page.getByRole('button', { name: 'remove' }).click()
    
@@ -134,90 +122,68 @@ describe('Blog page', () => {
   
   test('a blog can be removed only by owner', async ({ page }) => {
 
-    loginWith(page,'Steinway','secretu')
+    await loginWith(page,'Steinway','secretu')
 
 
     await expect(page.getByText('Albert Einstein logged in')).toBeVisible()
 
     await page.getByRole('button', { name: 'New blog' }).click()
 
-    await page.getByTestId('title').fill('titletuu')
-    await page.getByTestId('author').fill('NotAnAuthor')
-    await page.getByTestId('url').fill('secretu.urluu')
+    await createBlog(page, 'titletuu','NotAnAuthor', 'secretu.urluu')
 
-    await page.getByRole('button', { name: 'Create' }).click()
     await expect(page.getByText('titletuu view')).toBeVisible({ timeout: 6100 })
     await expect(page.getByRole('button', { name: 'view' })).toBeVisible()
 
     await page.getByRole('button', { name: 'logout' }).click()
 
-    loginWith(page,'newton','secretu')
+    await loginWith(page,'newton','secretu')
 
 
     await expect(page.getByText('Isaac Newton logged in')).toBeVisible()
 
     await page.getByRole('button', { name: 'New blog' }).click()
 
-
-    await page.getByTestId('title').fill('titletuuIsaac')
-    await page.getByTestId('author').fill('authorituuIsaac')
-    await page.getByTestId('url').fill('secretu.urluuIsaac')
-
-    await page.getByRole('button', { name: 'Create' }).click()
+    await createBlog(page, 'titletuuIsaac','authorituuIsaac', 'secretu.urluuIsaac')
   
     await page.getByRole('button', { name: 'view' }).click()
     await page.getByRole('button', { name: 'view' }).click()
 
-    expect(await page.getByTestId('blog')
-    .filter({hasText:"Author: NotAnAuthor"})
+    expect(await page.getByTestId('blogtitletuuNotAnAuthor')
     .getByRole('button', {name:'remove'}))
     .not.toBeVisible()
 
-    expect(await page.getByTestId('blog')
-    .filter({hasText:"Author: authorituuIsaac"})
+    expect(await page.getByTestId('blogtitletuuIsaacauthorituuIsaac')
     .getByRole('button', {name:'remove'}))
     .toBeVisible()
 
   })
 
 
-  test.only('a bloglist sorts by most votes', async ({ page }) => {
+  test('a bloglist sorts by most votes', async ({ page }) => {
 
-    loginWith(page,'Steinway','secretu')
+    await loginWith(page,'Steinway','secretu')
 
     await expect(page.getByText('Albert Einstein logged in')).toBeVisible()
 
     await page.getByRole('button', { name: 'New blog' }).click()
 
-    await page.getByTestId('title').fill('titletuu')
-    await page.getByTestId('author').fill('NotAnAuthor')
-    await page.getByTestId('url').fill('secretu.urluu')
+    await createBlog(page, 'titletuu','NotAnAuthor', 'secretu.urluu')
 
-    await page.getByRole('button', { name: 'Create' }).click()
     await expect(page.getByText('titletuu view')).toBeVisible({ timeout: 6100 })
     await expect(page.getByRole('button', { name: 'view' })).toBeVisible()
 
     await page.getByRole('button', { name: 'logout' }).click()
 
-    loginWith(page,'newton','secretu')
+    await loginWith(page,'newton','secretu')
 
 
     await expect(page.getByText('Isaac Newton logged in')).toBeVisible()
 
     await page.getByRole('button', { name: 'New blog' }).click()
 
+    await createBlog(page, 'titletuuIsaac','authorituuIsaac', 'secretu.urluuIsaac')
 
-    await page.getByTestId('title').fill('Isaac')
-    await page.getByTestId('author').fill('authorituuIsaac')
-    await page.getByTestId('url').fill('secretu.urluuIsaac')
-
-    await page.getByRole('button', { name: 'Create' }).click()
-
-    await page.getByTestId('title').fill('ThirdIsac')
-    await page.getByTestId('author').fill('Isaac')
-    await page.getByTestId('url').fill('secretu.urluu')
-
-    await page.getByRole('button', { name: 'Create' }).click()
+    await createBlog(page, 'ThirdIsac','Isaac', 'secretu.urluu')
 
     await page.getByTestId('blog')
     .filter({hasText:"titletuu view"})
@@ -232,46 +198,45 @@ describe('Blog page', () => {
     .getByRole('button', {name:'view'}).click()
 
   
-    await expect(page.getByTestId('blog').getByRole('button', {name:'vote'})).toHaveCount(3)
+    await expect(page.getByRole('button', {name:'vote'})).toHaveCount(3)
 
-    const isaac = await page.getByTestId('blog')
-    .filter({hasText:"Author: Isaac"})
-    .getByRole('button', {name:'vote'})
-
-    await isaac.click()
-  
-    const notAuthorBlog = await page.getByTestId('blog')
-    .filter({hasText:"Author: NotAnAuthor"})
-    .getByRole('button', {name:'vote'})
+    await voteFor(page, "blogThirdIsacIsaac",1)
     
-    await notAuthorBlog.click()
-    await notAuthorBlog.click()
-
-    const authorIsaac = await page.getByTestId('blog')
-    .filter({hasText:"Author: authorituuIsaac"})
-    .getByRole('button', {name:'vote'})
-
-    await authorIsaac.click()
-    await authorIsaac.click()
-    await authorIsaac.click()
-
-
-    const blogs = await page.getByTestId('blog').all()
+    let blogs = await page.getByRole('listitem').all()
     
+    await expect(blogs[0])
+    .toHaveText("Title:ThirdIsac hidelikes: 1 voteAuthor: IsaacUrl: secretu.urluuremove")
 
-    await expect(blogs[0]).toHaveText("Author: authorituuIsaac")
-    await expect(blogs[1]).toHaveText("Author: NotAnAuthor")
-    await expect(blogs[2]).toHaveText("Author: Isaac")
+    await voteFor(page, "blogtitletuuNotAnAuthor",1)
+    await voteFor(page, "blogtitletuuNotAnAuthor",2)
+    
+    blogs = await page.getByRole('listitem').all()
+    await expect(blogs[0])
+    .toHaveText("Title:titletuu hidelikes: 2 voteAuthor: NotAnAuthorUrl: secretu.urluuremove")
+    await expect(blogs[1])
+    .toHaveText("Title:ThirdIsac hidelikes: 1 voteAuthor: IsaacUrl: secretu.urluuremove")
 
 
+    await voteFor(page, "blogtitletuuIsaacauthorituuIsaac",1)
+    await voteFor(page, "blogtitletuuIsaacauthorituuIsaac",2)
+    await voteFor(page, "blogtitletuuIsaacauthorituuIsaac",3)
 
-    await expect(page.getByTestId('blog')
+    blogs = await page.getByRole('listitem').all()
+    await expect(blogs[0])
+    .toHaveText("Title:titletuuIsaac hidelikes: 3 voteAuthor: authorituuIsaacUrl: secretu.urluuIsaacremove")
+    await expect(blogs[1])
+    .toHaveText("Title:titletuu hidelikes: 2 voteAuthor: NotAnAuthorUrl: secretu.urluuremove")
+    await expect(blogs[2])
+    .toHaveText("Title:ThirdIsac hidelikes: 1 voteAuthor: IsaacUrl: secretu.urluuremove")
+
+
+    await expect(page.getByTestId('blogThirdIsacIsaac')
     .filter({hasText:"Author: Isaac"})
     .getByText('Likes: 1 vote')).toBeVisible()
-    await expect(page.getByTestId('blog')
+    await expect(page.getByTestId('blogtitletuuNotAnAuthor')
     .filter({hasText:"Author: NotAnAuthor"})
     .getByText('Likes: 2 vote')).toBeVisible()
-    await expect(page.getByTestId('blog')
+    await expect(page.getByTestId('blogtitletuuIsaacauthorituuIsaac')
     .filter({hasText:"Author: authorituuIsaac"})
     .getByText('Likes: 3 vote')).toBeVisible()
     

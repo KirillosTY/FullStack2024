@@ -15,7 +15,7 @@ const Login  = ({ username,password,setUsername,setPassword,submit }) => {
           onChange={setUsername}
         />
       </div>
-
+ 
       <div>
         Password: <input
           data-testid='password'
@@ -25,7 +25,7 @@ const Login  = ({ username,password,setUsername,setPassword,submit }) => {
           onChange={setPassword}
         />
       </div>
-      <button type="submit">login</button>
+      <button data-testid='login' type="submit">login</button>
     </form>
   
   )

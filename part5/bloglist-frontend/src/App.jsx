@@ -99,11 +99,9 @@ const App = () => {
 
   const handleUpvote = (blog)  => {
     blogService.put(blog).then((response) => {
+      response.user = user;
+      setBlogs(blogs.map((blogOnList) => blogOnList.id !== blog.id ? blogOnList: response))
      
-      blogService.getAll(user).then(blogs =>{
-        setBlogs( blogs )
-      }
-      )  
       setSuccessMessage(`${blog.title} by ${blog.author} successfully upvoted`)
       setTimeout(()=> {
         setSuccessMessage('')
@@ -171,9 +169,11 @@ const updatePassword = (event) => {
         <CreateBlog handleCreation= {handleCreation}></CreateBlog>
       </Togglable>  
 
-      {blogs.sort((first,second) => second.likes - first.likes).map(blog =>
-        <Blog key={blog.id}  blog={blog} updateUpvote={handleUpvote} removeBlog={removeBlog}  user={user}/>
-      )}
+      <ul >
+        {blogs.sort((first,second) => second.likes - first.likes).map(blog =>
+        <Blog key={blog.id}  blog={blog} 
+        updateUpvote={handleUpvote} removeBlog={removeBlog}  user={user}/>)}
+      </ul>
     </div>
   )
 }
