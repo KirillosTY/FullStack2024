@@ -1,3 +1,5 @@
+import { act } from "react"
+
 const anecdotesAtStart = [
   'If it hurts, do it more often',
   'Adding manpower to a late software project makes it later!',
@@ -22,8 +24,38 @@ const initialState = anecdotesAtStart.map(asObject)
 const reducer = (state = initialState, action) => {
   console.log('state now: ', state)
   console.log('action', action)
+  switch(action.type){
+    case 'vote': {
+      const modifiedContent = state.find(anec => anec.id === action.payload.id)
+      const newAnec =  {
+        ...modifiedContent,
+        votes: modifiedContent.votes+1
+      }
+    return  state.map(anec => anec.id !== action.payload.id? anec : newAnec)
+    }
+    case 'create': {
+      const newAnec =  asObject(action.payload.content)
+      return state.concat(newAnec)
+    }
+    default: return state
+  }
+}
 
-  return state
+export const upvote = (id)=>{
+  return  {
+    type: 'vote',
+    payload :{
+      id:id
+    }
+  }
+}
+
+export const createAnec = (newAnec) => {
+  return {
+    type: 'create',
+    payload: {
+      content:newAnec}
+  }
 }
 
 export default reducer
