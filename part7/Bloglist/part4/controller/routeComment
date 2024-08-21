@@ -1,0 +1,25 @@
+const mailRouter = require('express').Router()
+const Blog = require('.././models/blogSchema')
+
+
+
+mailRouter.post('api/blogs/:id/comments', async(request, response) => {
+    
+    const foundBlog = Blog.findById(request.blog.id)
+    const comment= request.body 
+    comment.blog = foundBlog
+
+    const newComment = new Comment(comment)
+   
+          
+    const savedcomment = await newComment.save()
+  
+  
+    foundBlog.comments = foundBlog.comments.concat(savedcomment.id)
+
+    await foundBlog.save()
+    response.status(201).json(newComment)
+    }
+  
+  )
+  

@@ -1,0 +1,14 @@
+.username{
+    background: none;     
+    border: none;          
+    color: blue;          
+    cursor: pointer;       
+    text-decoration: underline; 
+    padding: 0;          
+    font: inherit;        
+  }
+  
+  .username:hover {
+    text-decoration: underline;     
+  }
+  
