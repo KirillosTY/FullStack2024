@@ -1,0 +1,30 @@
+
+
+const mongoose = require('mongoose')
+
+// you must install this library
+const uniqueValidator = require('mongoose-unique-validator')
+
+const schemaAuth = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    unique: true,
+    minlength: 4
+  },
+  born: { 
+    type: Number,
+  },
+  books :[
+    {
+      type:mongoose.Schema.Types.ObjectId,
+      ref:'Book'
+    }
+  ]
+})
+
+schemaAuth.plugin(uniqueValidator)
+
+const Author  = mongoose.model('Author', schemaAuth)
+module.exports = Author
+
