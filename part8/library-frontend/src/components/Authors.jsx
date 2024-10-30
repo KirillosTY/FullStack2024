@@ -1,7 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ALL_Authors, ALL_BOOKS, EDIT_AUTHOR } from "../queries/queries"
 import { useMutation, useQuery } from "@apollo/client"
-import { useEffect } from "react"
 
 const Authors = (props) => {
   if (!props.show) {
@@ -13,12 +12,11 @@ const Authors = (props) => {
   const [editAuth] = useMutation(EDIT_AUTHOR,
     { refetchQueries: [
       {query: ALL_Authors},
-      {query:ALL_BOOKS}
+      {query: ALL_BOOKS}
       ]
     })
 
   const authors = useQuery(ALL_Authors)
-
 
   if(!authors.data || authors.loading){
     return (<div> 
@@ -26,8 +24,11 @@ const Authors = (props) => {
     </div>)
 
     }
+  useEffect(() => {
+    setName(authors.data.allAuthors[0].name)
 
- 
+
+  }, [])
   const editName = (event)=>{
     event.preventDefault()
     setName(event.target.value)
@@ -46,9 +47,7 @@ const Authors = (props) => {
     setYear('') 
 
   }
-  useEffect(()=> {
-    setName(authors.data.allAuthors[0].name)
-  },[authors])
+ 
   
 
  
@@ -75,7 +74,7 @@ const Authors = (props) => {
 
       <h2>Set birthyear</h2>
       <form onSubmit={submit}>
-        <select value={name}  onChange={editName}>
+        <select checked value={name}  onChange={editName}>
           {authors.data.allAuthors.map((author)=> {
             return <option key={author.id} value={author.name}>{author.name}</option>
           })}

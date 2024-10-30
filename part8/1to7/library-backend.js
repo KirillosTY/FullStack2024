@@ -3,53 +3,28 @@ const { startStandaloneServer } = require('@apollo/server/standalone')
 const { GraphQLError, GRAPHQL_MAX_INT } = require('graphql')
 const { v1: uuid } = require('uuid')
 const jwt = require('jsonwebtoken')
-const  Book  = require('./models/bookSchema')
-const  Author  = require('./models/authorSchema')
+const Book = require('./models/bookSchema')
+const Author = require('./models/authorSchema')
 
 require('dotenv').config()
 const mongoose = require('mongoose')
 
-const MURL= process.env.NODE_ENV === 'test '? process.env.MONGODB_URL_TESTS : process.env.MONGODB_URL
-const PORT= process.env.PORT
+const MURL = process.env.NODE_ENV === 'test ' ? process.env.MONGODB_URL_TESTS : process.env.MONGODB_URL
+const PORT = process.env.PORT
 
 
-module.exports =  {
-    MURL,
-    PORT
+module.exports = {
+  MURL,
+  PORT
 }
 
-mongoose.set('strictQuery',false)
+mongoose.set('strictQuery', false)
 
 console.log(`Connection url: ${MURL}`)
 const mongoUrl = MURL
 mongoose.connect(mongoUrl)
 
 
-let authors = [
-  {
-    name: 'Robert Martin',
-    id: "afa51ab0-344d-11e9-a414-719c6709cf3e",
-    born: 1952,
-  },
-  {
-    name: 'Martin Fowler',
-    id: "afa5b6f0-344d-11e9-a414-719c6709cf3e",
-    born: 1963
-  },
-  {
-    name: 'Fyodor Dostoevsky',
-    id: "afa5b6f1-344d-11e9-a414-719c6709cf3e",
-    born: 1821
-  },
-  { 
-    name: 'Joshua Kerievsky', // birthyear not known
-    id: "afa5b6f2-344d-11e9-a414-719c6709cf3e",
-  },
-  { 
-    name: 'Sandi Metz', // birthyear not known
-    id: "afa5b6f3-344d-11e9-a414-719c6709cf3e",
-  },
-]
 
 /*
  * Suomi:
@@ -65,58 +40,6 @@ let authors = [
  * Sin embargo, por simplicidad, almacenaremos el nombre del autor en conexión con el libro
 */
 
-let books = [
-  {
-    title: 'Clean Code',
-    published: 2008,
-    author: 'Robert Martin',
-    id: "afa5b6f4-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring']
-  },
-  {
-    title: 'Agile software development',
-    published: 2002,
-    author: 'Robert Martin',
-    id: "afa5b6f5-344d-11e9-a414-719c6709cf3e",
-    genres: ['agile', 'patterns', 'design']
-  },
-  {
-    title: 'Refactoring, edition 2',
-    published: 2018,
-    author: 'Martin Fowler',
-    id: "afa5de00-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring']
-  },
-  {
-    title: 'Refactoring to patterns',
-    published: 2008,
-    author: 'Joshua Kerievsky',
-    id: "afa5de01-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring', 'patterns']
-  },  
-  {
-    title: 'Practical Object-Oriented Design, An Agile Primer Using Ruby',
-    published: 2012,
-    author: 'Sandi Metz',
-    id: "afa5de02-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring', 'design']
-  },
-  {
-    title: 'Crime and punishment',
-    published: 1866,
-    author: 'Fyodor Dostoevsky',
-    id: "afa5de03-344d-11e9-a414-719c6709cf3e",
-    genres: ['classic', 'crime']
-  },
-  {
-    title: 'Demons',
-    published: 1872,
-    author: 'Fyodor Dostoevsky',
-    id: "afa5de04-344d-11e9-a414-719c6709cf3e",
-    genres: ['classic', 'revolution']
-  },
-]
-
 
 
 const typeDefs = `
@@ -128,7 +51,7 @@ type Author {
     id:ID!
     }
 
-    type Book {
+type Book {
   title: String!
   published: Int!
   author: Author!
@@ -137,13 +60,14 @@ type Author {
 }
     
 
-    type Mutation {
+type Mutation {
         addBook(
             title: String!
             author: String!
             published: Int!
             genres: [String!]
         ): Book
+
         editAuthor(
         name: String!
         bookCount: Int
@@ -152,7 +76,7 @@ type Author {
 }
 
 
-  type Query {
+type Query {
     bookCount: Int
     authorCount: Int
     allBooks(author: String, genre:String): [Book]
@@ -161,118 +85,128 @@ type Author {
   }
 `
 
-
 const resolvers = {
 
-    
-    Query: {
-        bookCount: async () => (await Book.find({})).length,
-        authorCount: async() => (await Author.find({})).length,
-        allBooks: async (root,args) => {
-            let modifyingBooks = await Book.find({}).populate('author', {name:1, born:1})
-            console.log(modifyingBooks)
-            if(args.author){
-              console.log(modifyingBooks[0].author, args.author)
 
-                modifyingBooks = modifyingBooks.filter(book => book.author.name === args.author)
-                console.log(modifyingBooks)
-            }
-            if(args.genre){
-                modifyingBooks = modifyingBooks.filter(book => book.genres.includes(args.genre))
+  Query: {
+    bookCount: async () => (await Book.find({})).length,
+    authorCount: async () => (await Author.find({})).length,
+    allAuthors: async () => {
 
-            }
-            return modifyingBooks
-            
-        },
-        allAuthors: async () => {
-          
-            let authed = await Author.find({})
-             authed.map(author => {
-              author.bookCount =author.books.length
-            })
-          
+      let authed = await Author.find({})
+      authed.map(author => {
+        author.bookCount = author.books.length
+      })
 
-            return authed
-            
-        }
+
+      return authed
+
     },
-    Mutation: {
-        addBook: async (root, args) => {
+    allBooks: async (root, args) => {
 
+      console.log('"käydään')
+      let modifyingBooks = await Book.find({}).populate('author', { name: 1, born: 1 })
+      console.log(modifyingBooks, "käydään")
+      if (args.author) {
+        console.log(modifyingBooks[0].author, args.author)
+
+        modifyingBooks = modifyingBooks.filter(book => book.author.name === args.author)
+        console.log(modifyingBooks)
+      }
+      if (args.genre) {
+        modifyingBooks = modifyingBooks.filter(book => book.genres.includes(args.genre))
+
+      }
+      return modifyingBooks
+
+    }
+  },
+  Mutation: {
+    addBook: async (root, args) => {
+
+      let authorFound = (await Author.findOne({ name: args.author }))
+
+      if (!authorFound) {
+        authorFound = new Author({
+          name: args.author,
+          born: 1992,
+          books: []
+        })
+        try {
+          authorFound = await authorFound.save()
+        } catch (error) {
+          throw new GraphQLError('Saving author failed', {
+            extensions: {
+              code: 'MongooseSavingError',
+              invalidArgs: authorFound,
+              error
+            }
+          }
+          )
+        }
+      }
+
+
+      let savedBook
+      try {
         
-          let  authorFound = (await Author.findOne({name:args.author}))
+        const newBook = new Book({
+          title: args.title,
+          published: args.published,
+          genres: args.genres,
+          author: authorFound._id
+        })
 
-          if(args.title.length <0 )
-          if(!authorFound){
-            authorFound = new Author({
-            name: args.author,
-            born: 1992,
-            books:[]
-          })
-          try {
-          authorFound = await  authorFound.save()
-          } catch(error) {
-            throw new GraphQLError('Saving author failed',{
-              extensions: {
-                code: 'MongooseSavingError',
-                invalidArgs:authorFound,
-                error
-                }
-              }
-            )
+        savedBook = await newBook.save()
+      } catch (error) {
+        throw new GraphQLError('Saving book failed', {
+          extensions: {
+            code: 'MongooseSavingError',
+            invalidArgs: { ...args, author: authorFound._id },
+            error
           }
         }
+        )
+      }
 
-        const newBook = new Book({ ...args, author:authorFound._id})
-          
-        try {
-        const savedBook = await newBook.save()
-         } catch(error) {
-            throw new GraphQLError('Saving book failed',{
-              extensions: {
-                code: 'MongooseSavingError',
-                invalidArgs: newBook,
-                error
-                }
-              }
-            )
-        }
-        
 
       try {
         authorFound.books = authorFound.books.concat(savedBook._id)
+
         savedAuth = await authorFound.save()
 
-      } catch(error) {
-        throw new GraphQLError('Saving book to author has failed',{
+      } catch (error) {
+        throw new GraphQLError('Saving book to author has failed', {
           extensions: {
             code: 'MongooseSavingError',
-            invalidArgs:authorFound,
+            invalidArgs: authorFound,
             error
-            }
           }
-        )
-    }
-        return  savedBook
-    },
-    editAuthor: async(root,args) => {
-        const foundAuthor = await Author.findOne({name:args.name})
-        console.log(foundAuthor)
-        if(!foundAuthor){
-            return null
-            console.log('not found')
         }
-        try {
+        )
+      }
+      savedBook._doc.author = savedAuth
+      console.log("Saved", savedBook)
+
+      return savedBook
+    },
+    editAuthor: async (root, args) => {
+      const foundAuthor = await Author.findOne({ name: args.name })
+      if (!foundAuthor) {
+        return null
+        console.log('not found')
+      }
+      try {
         const editedAuthor = {
-            ...foundAuthor.toObject(),
-            born: args.setBornTo
+          ...foundAuthor.toObject(),
+          born: args.setBornTo
         }
         console.log(editedAuthor)
-        const updatedAuth = await  Author.findByIdAndUpdate(editedAuthor._id,editedAuthor, {new:true})
+        const updatedAuth = await Author.findByIdAndUpdate(editedAuthor._id, editedAuthor, { new: true })
         return updatedAuth
       } catch (error) {
-        throw new GraphQLError('Editing author has failed',{
-          extensions:{
+        throw new GraphQLError('Editing author has failed', {
+          extensions: {
             code: 'BAD USER BAD',
             invalidArgs: args,
             error
@@ -292,4 +226,4 @@ startStandaloneServer(server, {
   listen: { port: PORT },
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
-})
+}) 

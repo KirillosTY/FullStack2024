@@ -2,11 +2,14 @@ import { ALL_BOOKS } from "../queries/queries"
 import { useQuery } from "@apollo/client"
 
 const Books = (props) => {
+  const getBooks = useQuery(ALL_BOOKS)
   if (!props.show) {
     return null
   }
 
-  const getBooks = useQuery(ALL_BOOKS)
+  
+  
+  console.log('books', getBooks)
 
   if(!getBooks.data || getBooks.loading){
     return (<div>
@@ -29,7 +32,7 @@ const Books = (props) => {
           {books.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
-              <td>{a.author}</td>
+              <td>{a.author.name}</td>
               <td>{a.published}</td>
             </tr>
           ))}

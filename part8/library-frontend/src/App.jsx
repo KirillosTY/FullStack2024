@@ -2,10 +2,11 @@ import { useState } from "react";
 import Authors from "./components/Authors";
 import Books from "./components/Books";
 import NewBook from "./components/NewBook";
+import { ALL_BOOKS } from "./queries/queries"
+import { useQuery} from "@apollo/client"
 
 const App = (props) => {
   const [page, setPage] = useState("authors");
-
 
 
   return (
@@ -16,11 +17,11 @@ const App = (props) => {
         <button onClick={() => setPage("add")}>add book</button>
       </div>
 
-      <Authors client={props.client} show={page === "authors"} />
+      <Authors  show={page === "authors"} />
 
-      <Books show={page === "books"} />
+      <Books  show={page === "books"} />
 
-      <NewBook show={page === "add"} />
+      <NewBook client={props.client} show={page === "add"} />
     </div>
   );
 };
