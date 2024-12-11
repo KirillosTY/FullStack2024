@@ -24,11 +24,7 @@ const Authors = (props) => {
     </div>)
 
     }
-  useEffect(() => {
-    setName(authors.data.allAuthors[0].name)
 
-
-  }, [])
   const editName = (event)=>{
     event.preventDefault()
     setName(event.target.value)
@@ -74,7 +70,7 @@ const Authors = (props) => {
 
       <h2>Set birthyear</h2>
       <form onSubmit={submit}>
-        <select checked value={name}  onChange={editName}>
+        <select checked value={authors.data.allAuthors[0].name}  onChange={editName}>
           {authors.data.allAuthors.map((author)=> {
             return <option key={author.id} value={author.name}>{author.name}</option>
           })}
