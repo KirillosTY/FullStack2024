@@ -103,6 +103,7 @@ type Query {
     allBooks(author: String, genre:String): [Book]
     allAuthors: [Author]
     me: User
+    favouriteGenre: String!
   }
 `
 
@@ -125,14 +126,10 @@ const resolvers = {
     },
     allBooks: async (root, args) => {
 
-      console.log('"käydään')
       let modifyingBooks = await Book.find({}).populate('author', { name: 1, born: 1 })
-      console.log(modifyingBooks, "käydään")
       if (args.author) {
-        console.log(modifyingBooks[0].author, args.author)
 
         modifyingBooks = modifyingBooks.filter(book => book.author.name === args.author)
-        console.log(modifyingBooks)
       }
       if (args.genre) {
         modifyingBooks = modifyingBooks.filter(book => book.genres.includes(args.genre))
@@ -141,13 +138,28 @@ const resolvers = {
       return modifyingBooks
 
     },
-    me: async(root,args, context) => context.currentUser
+    me: async(root,args, context) => context.loggedUser,
+    favouriteGenre: async(root,args,context)=> {
+
+      authCheck(context.loggedUser)
+      foundUser = await User.findOne({username:context.loggedUser.username})
+      if(foundUser === null){
+        throw new GraphQLError('User not found',{
+          extensions: {
+            code:'NOT_FOUND',
+            invalidArgs:context.loggedUser.username
+          }
+        })
+      }
+      return foundUser.favoriteGenre
+    }
   },
   Mutation: {
-    addBook: async (root, args, {userLogged}) => {
+    addBook: async (root, args, context) => {
+      console.log('userlog',context);
 
-      authCheck(userLogged)
-
+      authCheck(context.loggedUser)
+      console.log('userlog',context.loggedUser);
       let authorFound = (await Author.findOne({ name: args.author }))
 
       if (!authorFound) {
@@ -214,23 +226,24 @@ const resolvers = {
 
       return savedBook
     },
-    editAuthor: async (root, args, {userLogged}) => {
-      
-      authCheck(userLogged)
+    editAuthor: async (root, args, context) => {
+        console.log(context,'this here');
 
 
       const foundAuthor = await Author.findOne({ name: args.name })
+      console.log(foundAuthor,'author found');
       if (!foundAuthor) {
         return null
         console.log('not found')
       }
+      console.log('We got he','');
       try {
         const editedAuthor = {
           ...foundAuthor.toObject(),
           born: args.setBornTo
         }
-        console.log(editedAuthor)
         const updatedAuth = await Author.findByIdAndUpdate(editedAuthor._id, editedAuthor, { new: true })
+        console.log('updatedAuth', updatedAuth)
         return updatedAuth
       } catch (error) {
         throw new GraphQLError('Editing author has failed', {
@@ -243,7 +256,6 @@ const resolvers = {
       }
     },
     createUser: async(root, args) => {
-      console.log(args)
       const user = new User({username:args.username, 
         favoriteGenre:args.favoriteGenre})
       return user.save()
@@ -259,8 +271,7 @@ const resolvers = {
 
     },
     login: async (root,args) => {
-      const user = User.findOne({username: args.username})
-
+      const user =  await User.findOne({username: args.username})
       if(!user || args.password !== 'muumi'){
         throw new GraphQLError('BAD INPUT', {
           extensions: {
@@ -278,7 +289,7 @@ const resolvers = {
     
     return {value: jwt.sign(userToken, process.env.JWT_SEC)}
     }
-  }
+  } 
 }
 
 const server = new ApolloServer({
@@ -287,7 +298,7 @@ const server = new ApolloServer({
 })
 
 const authCheck = (loggedUser) => {
-  if(!userLogged){
+  if(!loggedUser){
     throw new GraphQLError('Bad auth', {
       extensions: {
         code: 'BAD AUTHORIZATION'
@@ -301,9 +312,9 @@ startStandaloneServer(server, {
   context: async ({req,res}) => {
     const auth = req? req.headers.authorization: null
     if(auth && auth.startsWith('Bearer ')){
-      const decodedTok = (jwt.verify(auth.substring(7),process.env.JWT_SEC))
-      const currentUser = await User.findById(decodedTok.id)
-      return {currentUser}
+      const decodedTok = jwt.verify(auth.substring(7),process.env.JWT_SEC)
+      const loggedUser = await User.findById(decodedTok.id)
+      return {loggedUser}
     }
   }
 }).then(({ url }) => {
