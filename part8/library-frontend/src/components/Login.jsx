@@ -10,6 +10,7 @@ const Login =({setToken}) => {
 
   const [login, result] = useMutation(LOGIN, {
     onError: (error) => {
+      console.log('käydään logiiiiii','');
       console.log(error.graphQLErrors[0].message)
     }
 
@@ -26,7 +27,7 @@ const Login =({setToken}) => {
 
   const submit = async (event) => {
     event.preventDefault()
-
+    console.log('pressed','');
     login({variables:{username,password}})
   
   }

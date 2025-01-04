@@ -1,25 +1,49 @@
 import { useState } from "react"
-import { ALL_BOOKS } from "../queries/queries"
-import { useQuery } from "@apollo/client"
+import { ALL_BOOKS, BOOK_SAVED } from "../queries/queries"
+import { useQuery,useApolloClient, useSubscription } from "@apollo/client"
 import Select from "react-select"
+
 
 const Books = (props) => {
 
-  const [genre, setGenre] = useState({label:'No filter', value:''})
-    
-  const getBooks =  useQuery(ALL_BOOKS)
   if (!props.show) {
     return null
   }
+  
+  const [genre, setGenre] = useState({label:'No filter', value:''})
+
+
+  
+  const getBooks =  useQuery(ALL_BOOKS)
+
+      
+  useSubscription(BOOK_SAVED, {
+    onData: ({data})=> {
+      const savedBook = data.data.addedBook
+      alert(`${savedBook.title} added`)
+      console.log('we visited',SVGAElement );
+     
+      props.client.cache.updateQuery({query:ALL_BOOKS}, 
+        ({
+          allBooks
+        }) => {
+          return  {
+            allBooks: allBooks.concat(savedBook)
+          }
+        }
+      )
+    }  
+  })
+
+
 
   if(!getBooks.data || getBooks.loading){
     return (<div>
       Results are loading...
     </div>)
   }
-
+  
   const books = getBooks.data.allBooks
-  console.log(genre,'');
   const bookShown = genre.value === ''? books :books.filter((b=> b.genres.includes(genre.value)))
 
 
@@ -31,7 +55,6 @@ const Books = (props) => {
   })]
   
 
-  console.log(genreOptions,'this ehre');
 
 
   return (

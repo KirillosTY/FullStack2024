@@ -31,8 +31,6 @@ const FavouriteGenre = (props) => {
   const bookShown = genre.value === ''? books :books.filter((b=> b.genres.some(g => g.toLowerCase().includes(genre.toLowerCase()))))
 
 
-
-
   return (
     <div>
       <h2>books</h2>

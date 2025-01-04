@@ -1,111 +1,12 @@
-const { ApolloServer } = require('@apollo/server')
-const { startStandaloneServer } = require('@apollo/server/standalone')
-const { GraphQLError, GRAPHQL_MAX_INT } = require('graphql')
-const { v1: uuid } = require('uuid')
+const { subscribe } = require('graphql')
+const { PubSub } = require('graphql-subscriptions')
+const pubsub = new PubSub()
+const User = require('../models/userSchema')
+const Author = require('../models/authorSchema')
+const Book = require('../models/bookSchema')
 const jwt = require('jsonwebtoken')
-const Book = require('./models/bookSchema')
-const Author = require('./models/authorSchema')
-const User = require('./models/userSchema')
-
 require('dotenv').config()
-const mongoose = require('mongoose')
 
-const MURL = process.env.NODE_ENV === 'test ' ? process.env.MONGODB_URL_TESTS : process.env.MONGODB_URL
-const PORT = process.env.PORT
-
-module.exports = {
-  MURL,
-  PORT
-}
-
-mongoose.set('strictQuery', false)
-
-console.log(`Connection url: ${MURL}`)
-const mongoUrl = MURL
-mongoose.connect(mongoUrl)
-
-
-
-/*
- * Suomi:
- * Saattaisi olla järkevämpää assosioida kirja ja sen tekijä tallettamalla kirjan yhteyteen tekijän nimen sijaan tekijän id
- * Yksinkertaisuuden vuoksi tallennamme kuitenkin kirjan yhteyteen tekijän nimen
- *
- * English:
- * It might make more sense to associate a book with its author by storing the author's id in the context of the book instead of the author's name
- * However, for simplicity, we will store the author's name in connection with the book
- *
- * Spanish:
- * Podría tener más sentido asociar un libro con su autor almacenando la id del autor en el contexto del libro en lugar del nombre del autor
- * Sin embargo, por simplicidad, almacenaremos el nombre del autor en conexión con el libro
-*/
-
-
-
-const typeDefs = `
-
-type Author {
-    name: String!
-    bookCount: Int
-    born: Int
-    id:ID!
-    }
-
-type Book {
-  title: String!
-  published: Int!
-  author: Author!
-  genres: [String!]!
-  id: ID!
-}
-
-type User {
-  username: String!
-  favoriteGenre: String!
-  id: ID!
-}
-
-type Token {
-  value: String!
-}
-
-    
-
-type Mutation {
-        addBook(
-          title: String!
-          author: String!
-          published: Int!
-          genres: [String!]
-        ): Book
-
-        editAuthor(
-          name: String!
-          bookCount: Int
-          setBornTo: Int!
-        ): Author
-
-        createUser(
-          username: String!
-          favoriteGenre: String!
-        ): User
-        
-        login(
-          username: String!
-          password: String!
-        ): Token
-}
-
-
-type Query {
-    bookCount: Int
-    authorCount: Int
-    allBooks(author: String, genre:String): [Book]
-    allAuthors: [Author]
-    me: User
-    favouriteGenre: String!
-  }
-`
 
 const resolvers = {
 
@@ -224,6 +125,8 @@ const resolvers = {
       savedBook._doc.author = savedAuth
       console.log("Saved", savedBook)
 
+      pubsub.publish('BOOK_SAVED', {addedBook: savedBook})
+
       return savedBook
     },
     editAuthor: async (root, args, context) => {
@@ -286,16 +189,21 @@ const resolvers = {
         {username: user.username,
           id: user._id
         }
+        console.log(userToken,' usertoken');
+        console.log('secret',process.env.JWT_SEC);
+        codedToken = jwt.sign(userToken, process.env.JWT_SEC) 
+        console.log('token', codedToken);
     
-    return {value: jwt.sign(userToken, process.env.JWT_SEC)}
+    return {value:codedToken}
     }
-  } 
-}
+  },
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-})
+  Subscription: {
+    addedBook: {
+      subscribe: () =>  pubsub.asyncIterableIterator('BOOK_SAVED')
+    }
+  }
+}
 
 const authCheck = (loggedUser) => {
   if(!loggedUser){
@@ -307,16 +215,4 @@ const authCheck = (loggedUser) => {
   }
 }
 
-startStandaloneServer(server, {
-  listen: { port: PORT },
-  context: async ({req,res}) => {
-    const auth = req? req.headers.authorization: null
-    if(auth && auth.startsWith('Bearer ')){
-      const decodedTok = jwt.verify(auth.substring(7),process.env.JWT_SEC)
-      const loggedUser = await User.findById(decodedTok.id)
-      return {loggedUser}
-    }
-  }
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`)
-}) 
+module.exports = resolvers
