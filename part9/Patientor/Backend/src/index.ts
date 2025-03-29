@@ -4,6 +4,7 @@ import cors from 'cors';
 
 const app = express();
 
+app.use(express.json())
 
 const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE'],

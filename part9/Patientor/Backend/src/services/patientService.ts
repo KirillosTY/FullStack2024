@@ -1,9 +1,11 @@
-import patients from '../data/patients';
-import { patientNotSSN } from '../types';
+import data from '../data/patients';
+import { newPatient, patientNotSSN } from '../types';
+import {v1 as uuid} from 'uuid'
 
 
+let memory = data
 const getPatients = ():patientNotSSN[] => {
-  return patients.map(({id,name,dateOfBirth,gender,occupation})=> ({
+  return memory.map(({id,name,dateOfBirth,gender,occupation})=> ({
     id,
     name,
     dateOfBirth,
@@ -15,4 +17,18 @@ const getPatients = ():patientNotSSN[] => {
 };
 
 
-export default {getPatients: getPatients};
+const addPatient = (newPatient:newPatient): patientNotSSN => {
+
+  const patientToAdd = {id:uuid(),...newPatient}
+
+  memory = memory.concat(patientToAdd)
+
+  const {ssn, ...rest} = patientToAdd;
+
+
+
+  return {...rest}
+}
+
+
+export default {getPatients: getPatients, addPatient};

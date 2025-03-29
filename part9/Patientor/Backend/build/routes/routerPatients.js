@@ -8,6 +8,13 @@ const patientService_1 = __importDefault(require("../services/patientService"));
 const router = express_1.default.Router();
 router.get('/');
 router.get('/', (_req, res) => {
+    console.log('We visited');
     res.send(patientService_1.default.getPatients());
+});
+router.post('/', (_req, res) => {
+    console.log('We visited');
+
+    const updatedPatients = patientService_1.default.addPatient(_req.body);
+    res.send(updatedPatients);
 });
 exports.default = router;
