@@ -1,34 +1,77 @@
 import data from '../data/patients';
-import { newPatient, patientNotSSN } from '../types';
-import {v1 as uuid} from 'uuid'
+import { newPatient,NonSensitivePatient, patientNotSSN, Patient, Entry } from '../types';
 
 
-let memory = data
-const getPatients = ():patientNotSSN[] => {
-  return memory.map(({id,name,dateOfBirth,gender,occupation})=> ({
+let memory = data;
+const getPatients = ():NonSensitivePatient[] => {
+  return memory.map(({id,name,dateOfBirth,gender,occupation})=>{
+
+    const gendered = gender;
+    
+    return ({
     id,
     name,
     dateOfBirth,
-    gender,
+    gender:gendered,
     occupation
-  
+  });
+});
+};
+console.log("we went to add entry");
 
-  }))
+
+const addPatient = (newPatient:newPatient): NonSensitivePatient => {
+
+
+
+  memory = memory.concat(newPatient);
+
+
+
+
+  return newPatient;
 };
 
 
-const addPatient = (newPatient:newPatient): patientNotSSN => {
+const addPatientEntry = (id: string,newPatientEntry:Entry): Patient | undefined=> {
+  console.log("we went to add entry", Date.now());
 
-  const patientToAdd = {id:uuid(),...newPatient}
+  const foundPatient = memory.find(patient => patient.id === id);
 
-  memory = memory.concat(patientToAdd)
+  if(foundPatient){
+    
+    foundPatient.entries = foundPatient.entries.concat(newPatientEntry);
+    memory = memory.concat(foundPatient);
 
-  const {ssn, ...rest} = patientToAdd;
+    
+    return foundPatient;
+
+  } else {
+  //validate here
+    
+  }
+
+  return undefined;
 
 
 
-  return {...rest}
-}
+};
 
 
-export default {getPatients: getPatients, addPatient};
+const getPatientById = (idString:string):patientNotSSN | undefined => {
+  const foundPatient = {...memory.find(patient => patient.id === idString)} as patientNotSSN;
+  
+  
+  if(foundPatient){
+
+    return foundPatient;
+    
+  }
+
+  return undefined;
+};
+
+
+export default {getPatients: getPatients, addPatient,getPatientById, 
+ addPatientEntry
+};

@@ -4,7 +4,7 @@ import cors from 'cors';
 
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
 
 const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -23,7 +23,7 @@ app.get('/api/ping', (_req,res)=> {
 
 app.use('/api/patients',routerPatients);
 
-app.use('/api/diagnoses',routerDiagnoses)
+app.use('/api/diagnoses',routerDiagnoses);
 
 const PORT = process.env.PORT;
 

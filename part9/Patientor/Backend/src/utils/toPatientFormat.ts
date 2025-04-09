@@ -1,6 +1,6 @@
-import { gender } from "../types"
+import {  Entry, Gender, HealthCheckRating} from "../types";
 
-import z from 'zod'
+import z from 'zod';
 
 
 
@@ -9,11 +9,121 @@ export const newPatientSchema = z.object({
   name: z.string(),
   dateOfBirth:  z.string(),
   ssn: z.string(),
-  gender: z.nativeEnum(gender),
-  occupation: z.string()
+  gender: z.nativeEnum(Gender),
+  occupation: z.string(),
 });
 
-export default newPatientSchema
+
+
+export const newEntry = z.object({
+  id:z.string().optional(),
+  description:z.string(),
+  date: z.string(),
+  specialist: z.string(),
+  diagnosisCodes: z.string().array().optional(),
+
+});
+
+ export const newOccupationalEntry = newEntry.extend({
+  type:z.literal("OccupationalHealthcare"),
+  employerName: z.string(),
+  sickLeave:z.object({
+    startDate: z.string(),
+    endDate: z.string()
+
+})
+});
+
+
+
+export const newHealthcheckEntry = newEntry.extend({
+  type:z.literal('HealthCheck'),
+  HealthCheckRating: z.nativeEnum(HealthCheckRating)
+
+});
+
+
+export const newHospitalEntry = newEntry.extend({
+  type:z.literal('Hospital'),
+  discharge: z.object( {
+    date: z.string(),
+    criteria: z.string()
+  })
+
+});
+
+
+export const newEntrySchema = z.discriminatedUnion("type",[
+  newOccupationalEntry||
+  newHealthcheckEntry||
+ newHospitalEntry
+
+]);
+
+
+export default newPatientSchema;
+
+
+export const parseEntry = (object:unknown): Entry=> {
+  
+  if (!object || typeof object !== 'object' ) {
+      throw new TypeError("object not found");
+
+  } 
+
+  newEntry.parse(object);
+
+  if('type' in object){
+      
+    newEntrySchema.parse(object);
+
+     return object as Entry;
+
+      
+  } else {
+    throw new TypeError('Type not recognized');
+  }
+
+
+
+};
+
+
+/*
+const validateEntryType = (entry: Entry): Entry => {
+  
+  if('type' in entry){
+    switch (entry.type){
+      case 'Hospital':
+        return validateEntryHospital(entry);
+      case 'OccupationalHealthcare':
+
+      
+  
+    }
+  }
+
+}
+ 
+const validateEntryHospital = (entry: Entry): Entry => {
+
+  if('discharge' in entry){
+    if('date' in entry.discharge && 'criteria' in entry.discharge){
+      z.date().parse(entry.discharge.date)
+      z.string().parse(entry.discharge.criteria)
+    }
+  }
+  
+}
+
+const validateEntryOccupational = (entry: Entry): Entry => {
+
+  occupationalEntry.parse(entry)
+
+  return entry
+  
+}
+
 
 /*
 const parseSsn = (ssn:unknown): string =>  {

@@ -86,7 +86,7 @@ const App = () => {
     <form onSubmit={handleSubmition}>
     <ErrorInfo info={error}></ErrorInfo>
 
-    <div> Date: <input input
+    <div> Date: <input
   type="date"
   id="start"
   name="trip-start"
